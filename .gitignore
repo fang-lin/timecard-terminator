@@ -1,0 +1,7 @@
+.DS_Store
+.idea/
+*-cookies.json
+account.json
+sms-code.txt
+screenshots/*
+node_modules

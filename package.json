@@ -1,0 +1,19 @@
+{
+  "name": "timecard-terminator",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": {},
+  "author": "linfang <linfang@thoughtworks.com>",
+  "scripts": {
+    "okta": "env DEBUG=\"*\" node scripts/okta.js",
+    "leave": "env DEBUG=\"*\" node scripts/leave.js",
+    "timecard": "env DEBUG=\"*\" node scripts/timecard.js"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "lodash": "^4.17.4",
+    "log4js": "^2.3.3",
+    "moment": "^2.18.1",
+    "puppeteer": "^0.10.2"
+  }
+}
