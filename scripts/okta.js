@@ -4,7 +4,7 @@ const path = require('path');
 const util = require('./util');
 const account = require('../account.json');
 
-const logger = require('log4js').getLogger('login');
+const logger = require('log4js').getLogger('okta');
 logger.level = 'debug';
 
 (async () => {
