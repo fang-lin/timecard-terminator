@@ -13,23 +13,15 @@ logger.level = 'debug';
     const browser = await puppeteer.launch({headless: false});
     const oktaPage = await browser.newPage();
 
-    await oktaPage.setCookie({
-        name: oktaCookies['sid'].name,
-        value: oktaCookies['sid'].value,
-        domain: oktaCookies['sid'].domain
-    });
-    await oktaPage.setCookie({
-        name: oktaCookies['JSESSIONID'].name,
-        value: oktaCookies['JSESSIONID'].value,
-        domain: oktaCookies['JSESSIONID'].domain
-    });
+    await util.setCookies(oktaPage, oktaCookies);
 
     await oktaPage.goto('https://thoughtworks.okta.com/app/UserHome');
     await oktaPage.waitForNavigation({waitUntil: 'networkidle'});
     await util.screenshot(oktaPage, logger);
 
     const leavePage = await browser.newPage();
-    leavePage.setCookie(leaveCookies);
+
+    await util.setCookies(leavePage, leaveCookies)
     await leavePage.goto('https://china-leave.herokuapp.com/leave_details/new');
     await leavePage.waitForNavigation({waitUntil: 'networkidle'});
     await leavePage.waitForSelector('.row-center-width > div:nth-child(3) a');
@@ -39,8 +31,8 @@ logger.level = 'debug';
     await leavePage.waitForNavigation({waitUntil: 'networkidle'});
     await util.screenshot(leavePage, logger);
 
-    await util.saveOktaCookies(oktaPage, logger);
-    await util.saveLeaveCookies(leavePage, logger);
+    await util.saveCookies(oktaPage, logger, 'okta-cookies');
+    await util.saveCookies(leavePage, logger, 'leave-cookies');
 
     browser.close();
 })();

@@ -11,23 +11,32 @@ module.exports = {
             fullPage: true
         })
     },
-    saveOktaCookies: async function (page, logger) {
+
+    saveCookies: async function (page, logger, filename) {
         const oktaCookies = await page.cookies(page.url());
-        const oktaToken = {
-            sid: oktaCookies.find(cookie => cookie.name === 'sid'),
-            JSESSIONID: oktaCookies.find(cookie => cookie.name === 'JSESSIONID'),
-        };
-        logger.info('Save Okta Cookies', `sid:"${oktaToken.sid.value}";JSESSIONID:"${oktaToken.JSESSIONID.value}"`);
+        logger.info('Save Okta Cookies');
         return new Promise(resolve => {
-            fs.writeFileSync(path.resolve(__dirname, '../okta-cookies.json'), JSON.stringify(oktaToken));
+            fs.writeFileSync(path.resolve(__dirname, `../${filename}.json`), JSON.stringify(oktaCookies));
             resolve();
         });
     },
-    saveLeaveCookies: async function (page, logger) {
-        const leaveCookies = await page.cookies(page.url());
-        logger.info('Save Leave Cookies', `${leaveCookies[0].name}`);
+
+    setCookies: async (page, cookies) => await Promise.all(cookies.filter(_ => _.session).map(async (cookie) => await page.setCookie(_.pick(cookie, ['name', 'value', 'domain'])))),
+
+    fetchSmsCode: async function waitSmsCode(page, logger, count) {
+        await page.waitFor(1000);
+        const smsCode = fs.readFileSync(path.resolve(__dirname, '../sms-code.txt')).toString().trim();
+        if (smsCode) {
+            logger.info('SMS Code', `"${smsCode}"`);
+            return smsCode;
+        } else {
+            return await waitSmsCode(page, logger, ++count);
+        }
+    },
+
+    initSmsCode: async function () {
         return new Promise(resolve => {
-            fs.writeFileSync(path.resolve(__dirname, '../leave-cookies.json'), JSON.stringify(leaveCookies[0]));
+            fs.openSync(path.normalize(path.resolve(__dirname, '../sms-code.txt')), 'w');
             resolve();
         });
     }
