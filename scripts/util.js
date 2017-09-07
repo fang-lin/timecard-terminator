@@ -6,17 +6,17 @@ const moment = require('moment');
 module.exports = {
     screenshot: async function (page, logger) {
         logger.info(page.url())
-        return await page.screenshot({
+        await page.screenshot({
             path: `screenshots/${moment().format('YYYYMMDD-HH:mm:ss.SSS')}.png`,
             fullPage: true
         })
     },
 
     saveCookies: async function (page, logger, filename) {
-        const oktaCookies = await page.cookies(page.url());
-        logger.info('Save Okta Cookies');
+        const cookies = await page.cookies(page.url());
+        logger.info(`Save Cookies > ${filename}.json`);
         return new Promise(resolve => {
-            fs.writeFileSync(path.resolve(__dirname, `../${filename}.json`), JSON.stringify(oktaCookies));
+            fs.writeFileSync(path.resolve(__dirname, `../data/${filename}.json`), JSON.stringify(cookies));
             resolve();
         });
     },
@@ -39,5 +39,30 @@ module.exports = {
             fs.openSync(path.normalize(path.resolve(__dirname, '../sms-code.txt')), 'w');
             resolve();
         });
+    },
+
+    setRequestInterception: async function (page, logger, exts) {
+        await page.setRequestInterceptionEnabled(true);
+        page.on('request', request => {
+            if (request.url.match(new RegExp(`\\.(${exts})$`, 'i'))) {
+                logger.info('Abort Request', request.method, request.url);
+                request.abort();
+            } else {
+                logger.info('Request', request.method, request.url);
+                request.continue();
+            }
+        });
+    },
+
+    inCurrentWeek: function (date) {
+        const current = new Date();
+        const currentYear = current.getFullYear();
+        const currentMonth = current.getMonth();
+        const currentDate = current.getDate();
+        const currentDay = current.getDay();
+        const weekStart = new Date(currentYear, currentMonth, currentDate - currentDay);
+        const weekEnd = new Date(currentYear, currentMonth, currentDate - currentDay + 6);
+
+        return date > weekStart && date < weekEnd;
     }
 };

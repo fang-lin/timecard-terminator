@@ -7,7 +7,8 @@
   "scripts": {
     "okta": "env DEBUG=\"*\" node scripts/okta.js",
     "leave": "env DEBUG=\"*\" node scripts/leave.js",
-    "timecard": "env DEBUG=\"*\" node scripts/timecard.js"
+    "timecard": "env DEBUG=\"*\" node scripts/timecard.js",
+    "clean-scr": "rm screenshots/*.png"
   },
   "license": "MIT",
   "dependencies": {

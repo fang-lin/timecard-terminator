@@ -5,3 +5,4 @@ account.json
 sms-code.txt
 screenshots/*
 node_modules
+data/*
