@@ -1,6 +1,4 @@
 const puppeteer = require('puppeteer');
-const moment = require('moment');
-const $ = require('jquery');
 const fs = require('fs');
 const path = require('path');
 const util = require('./util');
@@ -22,7 +20,7 @@ logger.level = 'debug';
     await util.screenshot(oktaPage, logger);
 
     const leavePage = await browser.newPage();
-    await util.setRequestInterception(leavePage, logger, 'png|jpg|ico');
+    await util.setRequestInterception(leavePage, logger, 'png|jpg|ico|css');
 
     await util.setCookies(leavePage, leaveCookies);
     await leavePage.goto('https://china-leave.herokuapp.com/leave_details/new');
@@ -35,14 +33,15 @@ logger.level = 'debug';
     await util.screenshot(leavePage, logger);
 
     const listHTML = await leavePage.$eval('table.bordered tbody', el => el.innerHTML);
-    const leaves = listHTML.match(/<tr>[\s\S]*?<\/tr>/ig).map(tr =>
+    const allLeaves = listHTML.match(/<tr>[\s\S]*?<\/tr>/ig).map(tr =>
         tr.match(/<td>[\s\S]*?<\/td>/ig).filter((td, i) => [2, 3, 4, 5, 6].includes(i)).map(td =>
             td.replace(/<\/?td>/ig, '')
         )
     );
+    const currentWeekLeaves = allLeaves.filter(leave => util.inCurrentWeek(new Date(leave[0])))
 
     logger.info('Save leaves > leaves.json');
-    fs.writeFileSync(path.resolve(__dirname, `../data/leaves.json`), JSON.stringify(leaves));
+    fs.writeFileSync(path.resolve(__dirname, `../data/leaves.json`), JSON.stringify(currentWeekLeaves));
 
     await util.saveCookies(oktaPage, logger, 'okta-cookies');
     await util.saveCookies(leavePage, logger, 'leave-cookies');
