@@ -54,15 +54,71 @@ module.exports = {
         });
     },
 
-    inCurrentWeek: function (date) {
+    getCurrentWeekStart: function () {
         const current = new Date();
         const currentYear = current.getFullYear();
         const currentMonth = current.getMonth();
         const currentDate = current.getDate();
         const currentDay = current.getDay();
-        const weekStart = new Date(currentYear, currentMonth, currentDate - currentDay);
-        const weekEnd = new Date(currentYear, currentMonth, currentDate - currentDay + 6);
+        return new Date(currentYear, currentMonth, currentDate - currentDay + 1);
+    },
 
-        return date > weekStart && date < weekEnd;
+    getCurrentWeekEnd: function () {
+        const current = new Date();
+        const currentYear = current.getFullYear();
+        const currentMonth = current.getMonth();
+        const currentDate = current.getDate();
+        const currentDay = current.getDay();
+        return new Date(currentYear, currentMonth, currentDate - currentDay + 7);
+    },
+
+    inCurrentWeek: function (date) {
+        return date > this.getCurrentWeekStart() && date < this.getCurrentWeekEnd();
+    },
+
+    covertLeavesToTimecard: function (leaves) {
+        const timecard = [{
+            project: 'livetext',
+            times: [8, 8, 8, 8, 8]
+        }, {
+            project: 'sick leave',
+            times: [0, 0, 0, 0, 0]
+        }, {
+            project: 'non-sick leave',
+            times: [0, 0, 0, 0, 0]
+        }];
+
+        leaves.forEach(leave => {
+            const startDate = new Date(leave[0]);
+            const EndDate = new Date(leave[1]);
+            const more = (EndDate - startDate ) / 86400 / 1000;
+            const startDateIndex = (startDate.getDay() || 7) - 1;
+            const range = _.range(startDateIndex, startDateIndex + more + 1);
+
+            range.forEach((timecardIndex, i) => {
+                let peonTime = 0;
+                let otherTime = 8;
+                if (
+                    i === 0 && leave[2] /* Start date half */ === 'Yes' ||
+                    i === range.length - 1 && leave[3] /* End date half */ === 'Yes'
+                ) {
+                    peonTime = 4;
+                    otherTime = 4;
+                }
+
+                timecard[0].times[timecardIndex] = peonTime;
+
+                switch (leave[4]) {
+                    case('sick leave'):
+                        timecard[1].times[timecardIndex] = otherTime;
+                        break;
+                    case('annual leave'):
+                        timecard[2].times[timecardIndex] = otherTime;
+                        break;
+                }
+            })
+        });
+
+        return timecard;
     }
 };

@@ -38,10 +38,10 @@ logger.level = 'debug';
             td.replace(/<\/?td>/ig, '')
         )
     );
-    const currentWeekLeaves = allLeaves.filter(leave => util.inCurrentWeek(new Date(leave[0])))
+    const currentWeekLeaves = allLeaves.filter(leave => util.inCurrentWeek(new Date(leave[0])));
 
-    logger.info('Save leaves > leaves.json');
-    fs.writeFileSync(path.resolve(__dirname, `../data/leaves.json`), JSON.stringify(currentWeekLeaves));
+    logger.info('Save leaves > current-week-leaves.json');
+    fs.writeFileSync(path.resolve(__dirname, `../data/current-week-leaves.json`), JSON.stringify(currentWeekLeaves));
 
     await util.saveCookies(oktaPage, logger, 'okta-cookies');
     await util.saveCookies(leavePage, logger, 'leave-cookies');
